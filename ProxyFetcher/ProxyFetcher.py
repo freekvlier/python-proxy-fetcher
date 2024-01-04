@@ -38,10 +38,10 @@ def get_proxy_addresses(num_of_proxies):
         return None
 
 
-def fetch_url(queue, url, lock, success):
+def fetch_url(queue, url, lock, success, headers):
     while True:
         proxy_obj = queue.get()
-        if proxy_obj is None: 
+        if proxy_obj is None:
             queue.task_done()
             break
 
@@ -49,20 +49,23 @@ def fetch_url(queue, url, lock, success):
         proxy = {proxy_obj['protocol']: f"{proxy_obj['protocol']}://{proxy_address}"}
         try:
             logger.debug(f"Trying proxy: {proxy_address}")
-            response = requests.get(url, proxies=proxy, timeout=10, verify=False)
+            response = requests.get(url, proxies=proxy, headers=headers, timeout=PROXY_TIMEOUT, verify=PROXY_SSL_VERIFICATION)
             if response.status_code == 200:
                 with lock:
-                    if not success['flag']:  # Double-checking after acquiring the lock
+                    if not success['flag']:
                         success['flag'] = True
                         success['response'] = response
                         logger.info(f"Successfully fetched with proxy: {proxy_address}")
-                break  # Stop the thread if successful
+                break
         except requests.RequestException as e:
             logger.error(f"Error with proxy {proxy_address}: {e}")
         finally:
             queue.task_done()
 
-def fetch_with_proxies(url, num_of_proxies, num_threads):
+def fetch_with_proxies(url, num_of_proxies, num_threads, headers=None):
+    if headers is None:
+        headers = {}
+
     proxies = get_proxy_addresses(num_of_proxies)
     if not proxies:
         logger.error("Could not fetch proxy addresses.")
@@ -74,13 +77,13 @@ def fetch_with_proxies(url, num_of_proxies, num_threads):
     threads = []
     
     for _ in range(num_threads):
-        thread = Thread(target=fetch_url, args=(queue, url, lock, success))
+        thread = Thread(target=fetch_url, args=(queue, url, lock, success, headers))
         thread.start()
         threads.append(thread)
     
     for proxy in proxies:
         if success['flag']:
-            break 
+            break
         queue.put(proxy)
     
     for _ in range(num_threads):
@@ -92,8 +95,11 @@ def fetch_with_proxies(url, num_of_proxies, num_threads):
     return success['response']
 
 if __name__ == '__main__':
-    response = fetch_with_proxies("https://webscraper.io/test-sites/e-commerce/allinone", 10, 2)
+    custom_headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+    }
+    response = fetch_with_proxies("https://webscraper.io/test-sites/e-commerce/allinone", 10, 4, headers=custom_headers)
     if response:
-        logger.info(f"Successfully fetched with proxy: {response}")
+        logger.info(f"Successfully fetched with proxy: {response.text}")
     else:
         logger.error("Failed to fetch with any of the proxies.")
