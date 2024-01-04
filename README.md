@@ -45,11 +45,11 @@ python3 -m ProxyFetcher.ProxyFetcher
 
 ## Executing the Package
 
-To fetch proxies with the desired URL, number of proxies, and threads, use:
+To fetch proxies with the desired URL, number of proxies, threads, and optional headers, use:
 
 ```python
 from ProxyFetcher.ProxyFetcher import fetch_with_proxies
-response = fetch_with_proxies('http://httpbin.org/ip', 10, 4)
+response = fetch_with_proxies('http://httpbin.org/ip', 10, 4, headers={'User-Agent': 'Your Custom User-Agent'})
 if response:
     print(f"Successfully fetched with proxy: {response.text}")
 else:
@@ -61,6 +61,7 @@ else:
 - `url`: The target URL to fetch using the proxies.
 - `num_of_proxies`: The number of proxy addresses to fetch and test.
 - `num_threads`: The number of threads to use for concurrent testing of proxies.
+- `headers` (optional): A dictionary of HTTP headers you want to send with each request.
 
 ## Install as Pip Package
 
