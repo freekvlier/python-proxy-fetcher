@@ -3,6 +3,9 @@ from bs4 import BeautifulSoup
 from threading import Thread, Lock
 from queue import Queue
 from ProxyFetcher.logger_config import setup_logger
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # Disable warnings for insecure requests
 
 logger = setup_logger()
 PROXIES_SOURCE = "https://free-proxy-list.net/"
