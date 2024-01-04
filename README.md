@@ -64,7 +64,13 @@ else:
 
 ## Install as Pip Package
 
-Currently, this package is not available on PyPI. Install it manually by downloading the source code and running:
+You can install this package via pip directly from the GitHub repository using:
+
+```bash
+pip install git+https://github.com/freekvlier/python-proxy-fetcher.git
+```
+
+Or, for a local installation from the source code, navigate to the directory containing `setup.py` and run:
 
 ```bash
 pip install .
