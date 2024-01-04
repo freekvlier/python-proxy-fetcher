@@ -50,6 +50,7 @@ def fetch_url(queue, url, lock, success, headers):
         try:
             logger.debug(f"Trying proxy: {proxy_address}")
             response = requests.get(url, proxies=proxy, headers=headers, timeout=PROXY_TIMEOUT, verify=PROXY_SSL_VERIFICATION)
+            logger.debug(f"{proxy_address} response code: {response.status_code}")
             if response.status_code == 200:
                 with lock:
                     if not success['flag']:
